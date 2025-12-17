@@ -1,8 +1,15 @@
-**FINDING 1**
-Title: Authentication logic allows access without password
-Flag: Design Assumption Broken
-Location: nuclei-bootcamp/apps/ch1-auth/app.py
-Trigger Condition: POST request to /login with username but without password
-Root Cause: The authentication flow assumes that the presence of a username is sufficient for partial authentication and issues an access token without validating credentials.
-Impact: Unauthorized users can obtain an access token without providing valid authentication credentials, breaking the intended security model.
-Evidence: A POST request containing only a username returns a 200 OK response with a token (internal-access), demonstrating authentication bypass.
+## Challenge 1 (CH1) - Authentication Bypass
+
+**Challenge ID:** CH1  
+**Target URL:** http://127.0.0.1:8001  
+Finding Summary: Authentication bypass vulnerability in login endpoint. The application accepts JSON requests with only a username field (no password), returning an "internal-access" token. This allows attackers to bypass authentication entirely.  
+Detection Method: Custom Nuclei template that sends a POST request with only username in JSON body  
+Template File: [ch1-auth-bypass.yaml](templates/ch1-auth-bypass.yaml)
+
+Vulnerability Details
+•⁠  ⁠Endpoint: ⁠ /login ⁠ (POST)
+•⁠  ⁠Vulnerability Type: Broken Authentication
+•⁠  ⁠Severity: Critical
+•⁠  ⁠Root Cause: Missing validation for required password field
+
+
