@@ -29,49 +29,75 @@
 •⁠  ⁠*Root Cause:* Insufficient path sanitization
 ****
 
+## Challenge 3 (CH3) - IDOR in API
 
-**Target URL:** http://172.16.13.89:9005  
-**Finding Summary:** Session management misconfiguration identified through black-box analysis. The application may have issues with session token validation, predictable session IDs, or improper cookie security flags.  
-**Detection Method:** Custom Nuclei template analyzing session handling and cookie manipulation  
-**Template File:** [ch5-session-misconfiguration.yaml](templates/ch5-session-misconfiguration.yaml)
-
-### Vulnerability Details
-- **Vulnerability Type:** Session Management Flaw
-- **Testing Model:** Black-box
-- **Severity:** Medium to High
-- **Potential Issues:** Missing HttpOnly/Secure flags, session fixation, weak session tokens
-
----
-
-## Challenge 6 (CH6) - State Desync
-
-**Challenge ID:** CH6  
-**Target URL:** http://127.0.0.1:9020  
-**Finding Summary:** State desynchronization vulnerability in multi-stage workflow. The application allows skipping required stages (stage 2) and directly committing, resulting in unintended "extended" mode access with additional operations. This is a logic flaw where mandatory steps can be bypassed.  
-**Detection Method:** Custom Nuclei template that performs /init then directly calls /commit, skipping /advance  
-**Template File:** [ch6-state-desync.yaml](templates/ch6-state-desync.yaml)
+******Challenge ID:******CH3  
+****Target URL:**** http://127.0.0.1:8003  
+****Finding Summary:**** Insecure Direct Object Reference (IDOR) vulnerability in the orders API. The endpoint only checks for the presence of an Authorization header but doesn't validate ownership of the requested order. Any authenticated user can access any order by changing the order ID.  
+****Detection Method:**** Custom Nuclei template with arbitrary Authorization header accessing different order IDs  
+**Template File:** [ch3-idor-api.yaml](templates/ch3-idor-api.yaml)
 
 ### Vulnerability Details
-- **Endpoints:** `/init`, `/advance`, `/commit`
-- **Vulnerability Type:** Business Logic Flaw / State Desync
+- **Endpoint:** `/api/orders/<oid>`
+- **Vulnerability Type:** Broken Access Control / IDOR
 - **Severity:** High
-- **Root Cause:** Stage 2 advancement is not enforced before commit
+- **Root Cause:** Missing authorization check for resource ownership
+****
 
----
+### Challenge 4(CH4) - SSRF
+******Challenge ID:****** CH4
+****Target URL:**** http://ssrf.challenge.hprcse.com/fetch
+****Finding Summary:**** The fetch endpoint is designed to perform server-side requests to user-supplied URLs, introducing a server-side request forgery risk if internal address restrictions are not enforced; the target host was not reachable from the testing environment.
+****Detection Method:**** Black-box analysis based on documented challenge scope and endpoint behavior
 
-## Challenge 7 (CH7) - Access Control Bypass
+****Template File:**** N/A
 
-**Challenge ID:** CH7  
-**Target URL:** http://172.16.13.89:9021  
-**Finding Summary:** Access control bypass through header injection. The application trusts client-supplied headers for determining access rights or client IP, allowing attackers to bypass restrictions by injecting headers like X-Forwarded-For, X-Real-IP, or similar.  
-**Detection Method:** Custom Nuclei template testing various trust-related HTTP headers  
-**Template File:** [ch7-access-control.yaml](templates/ch7-access-control.yaml)
 
- Vulnerability Details
-- Vulnerability Type: Broken Access Control / Header Injection
-- Testing Model: Black-box
-- Severity: Critical
-- Potential Impact: Authentication bypass, privilege escalation, access to restricted resources
+Finding Summary: The API grants access to order data based solely on the presence of an Authorization header without validating the token or enforcing user-level authorization.
 
----
+Detection Method: Manual code review and runtime validation
+
+********
+
+### Challenge 5(CH5) - SESSION 
+****Challenge ID:**** CH5
+
+****Target URL:**** Not provided
+
+Finding Summary: Challenge 5 is defined as a remote black-box session management assessment; however, no target endpoint was provided to evaluate session handling behavior.
+
+Detection Method: Black-box analysis based on documented challenge scope
+
+Template File: N/A
+
+********
+
+### Challenge 6(CH6)- STATE 
+****Challenge ID:**** CH6
+
+Target URL: http://127.0.0.1:8006/commit
+
+Finding Summary: The application returns a successful commit response even when required workflow state transitions are skipped, resulting in a silent failure and state desynchronization.
+
+Detection Method: Manual code review and runtime validation
+
+Template File: N/A
+
+********
+
+### Challenge 7(CH4)- ABSCENCE
+
+****Challenge ID:**** CH7
+
+****Target URL:**** Not provided
+
+Finding Summary: The service relies on implicit trust for access decisions without enforcing explicit authentication or authorization controls, indicating an absence of required security checks.
+
+Detection Method: Black-box analysis based on documented challenge scope and access model
+
+Template File: N/A
+
+
+********
+
 
